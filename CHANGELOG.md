@@ -1,5 +1,10 @@
 # Changelog
 
+## Aegis Agent 1.0.1 (2026-09-28)
+
+- The web interface shows its version (1.0.0 showed "dev-snapshot-build" and a configuration view meant for development builds).
+- `install.sh` prints the address the interface really listens on when `/etc/aegis-agent/agent.env` sets `BACKREST_PORT`.
+
 ## Aegis Agent 1.0.0 (2026-09-28)
 
 First release of Aegis Agent, based on Backrest 1.14.1 with the later upstream changes up to commit 148ba12c. Everything changed from Backrest is listed in [NOTICE](./NOTICE).

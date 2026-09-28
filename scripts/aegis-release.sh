@@ -49,6 +49,9 @@ WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
 echo "==> Web interface"
+# The interface shows this version in its header; without it, it presents
+# itself as a development build.
+export BACKREST_BUILD_VERSION=$VERSION
 pnpm --dir webui install --frozen-lockfile
 pnpm --dir webui run build
 

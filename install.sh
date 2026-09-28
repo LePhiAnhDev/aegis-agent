@@ -258,9 +258,13 @@ main() {
   else
     say "Installed and started: $installed"
   fi
+  # agent.env may move the interface (BACKREST_PORT); show where it listens.
+  listen=$(sed -n 's/^BACKREST_PORT=//p' "$ENV_FILE" | tail -n 1 | tr -d "\"'")
+  listen=${listen:-127.0.0.1:9898}
+  port=${listen##*:}
   echo "    Service:   systemctl status $SERVICE   (logs: journalctl -u $SERVICE)"
-  echo "    Interface: http://127.0.0.1:9898 on this server; from your computer:"
-  echo "               ssh -L 9898:localhost:9898 <user>@<this server>, then open http://localhost:9898"
+  echo "    Interface: http://$listen on this server; from your computer:"
+  echo "               ssh -L $port:localhost:$port <user>@<this server>, then open http://localhost:$port"
   echo "    Settings:  $ENV_FILE   History: $DATA_DIR"
   if [ "$MISSING_SETTINGS" = true ]; then
     echo ""
