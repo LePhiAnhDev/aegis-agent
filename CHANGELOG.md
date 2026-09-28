@@ -1,5 +1,10 @@
 # Changelog
 
+## Aegis Agent 1.0.2 (2026-09-28)
+
+- In the Docker image, a restore suggests a target under `/restores` (`./aegis-agent/restores` on the server): the suggestion next to the original pointed into the read-only `/userdata` mount, so the restore failed. `/aegis/status` now reports the runtime (`docker`, `systemd` or `other`).
+- The startup check for conflicting restic password variables names Aegis Agent.
+
 ## Aegis Agent 1.0.1 (2026-09-28)
 
 - The web interface shows its version (1.0.0 showed "dev-snapshot-build" and a configuration view meant for development builds).

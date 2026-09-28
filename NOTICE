@@ -34,6 +34,9 @@ Modifications made for Aegis Agent (starting 2026-09-28):
   (alerts are sent by Aegis Cloud); existing hooks keep working.
 - Multihost sync is turned off in the web interface.
 - The restic binary shipped next to Aegis Agent is used before downloading one.
+- In the Docker image, the restore dialog suggests a target under /restores
+  (the backed-up folders are mounted read-only); /aegis/status reports the
+  runtime for this.
 - Fix: a repository with backups but no check or prune yet no longer stops the
   agent from starting when the check or prune schedule is a cron expression
   counted from the last run (internal/protoutil/schedule.go).

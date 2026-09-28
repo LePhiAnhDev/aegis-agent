@@ -89,7 +89,7 @@ var migration005CheckRepoPasswords = func(config *v1.Config) error {
 
 	// Block startup with a detailed error message.
 	var b strings.Builder
-	b.WriteString("IMPORTANT: Backrest detected a potential password conflict affecting your restic repos (see https://github.com/garethgeorge/backrest/issues/1139).\n")
+	b.WriteString("IMPORTANT: Aegis Agent detected a potential password conflict affecting your restic repos.\n")
 	b.WriteString("\n")
 	b.WriteString("What happened:\n")
 	b.WriteString("  Aegis Agent was using the wrong password for restic repos. The environment variables listed\n")

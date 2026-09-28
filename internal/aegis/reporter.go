@@ -56,6 +56,9 @@ type Status struct {
 	Pending       int                `json:"pending"`
 	InstanceID    string             `json:"instanceId,omitempty"`
 	Repositories  []RepositoryPreset `json:"repositories"`
+	// Runtime is docker, systemd or other; the interface uses it to suggest
+	// a restore target the Docker image can write (/restores).
+	Runtime string `json:"runtime"`
 }
 
 // Reporter reports this agent's operations to Aegis Cloud. It never blocks
@@ -96,6 +99,7 @@ func NewReporter(cfg Config, configMgr *config.ConfigManager, ops *oplog.OpLog, 
 			ReportURL:    cfg.ReportURL,
 			InstanceID:   cfg.InstanceID,
 			Repositories: cfg.Repositories,
+			Runtime:      detectRuntime(cfg.Runtime),
 		},
 	}
 	if r.status.Repositories == nil {

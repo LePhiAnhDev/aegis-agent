@@ -45,6 +45,10 @@ ssh -L 9898:localhost:9898 you@your-server
 
 On first start, set the instance ID and create the login for the interface.
 
+## Restore
+
+Restores run in Aegis Agent: open the repository, choose a snapshot, browse to a file or folder and choose **Restore**. On Linux the suggested target is next to the original. The Docker image backs up folders mounted read-only under `/userdata`, so it suggests a folder under `/restores`, which is `./aegis-agent/restores` on the server. With an empty target, restic restores into the downloads folder of the interface's user (`$HOME/Downloads`), and the finished restore offers its files for download in the operation's details. A restore never writes into a folder that already exists.
+
 ## Configuration
 
 The install files from Aegis Cloud set the first four rows; the Linux service and the image choose the paths and the listen address.

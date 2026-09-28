@@ -284,7 +284,7 @@ func TestReporterBacksOffAndHonoursRetryAfter(t *testing.T) {
 }
 
 func TestReporterDisabledServesStatus(t *testing.T) {
-	reporter, err := NewReporter(Config{InstanceID: "web-prod-01"}, nil, nil, nil, nil)
+	reporter, err := NewReporter(Config{InstanceID: "web-prod-01", Runtime: "docker"}, nil, nil, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -295,7 +295,7 @@ func TestReporterDisabledServesStatus(t *testing.T) {
 	if err := json.NewDecoder(recorder.Body).Decode(&status); err != nil {
 		t.Fatal(err)
 	}
-	if status.Enabled || status.State != StateDisabled || status.InstanceID != "web-prod-01" || status.Repositories == nil {
+	if status.Enabled || status.State != StateDisabled || status.InstanceID != "web-prod-01" || status.Repositories == nil || status.Runtime != "docker" {
 		t.Fatalf("status = %+v", status)
 	}
 }

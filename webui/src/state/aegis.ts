@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { authenticatedFetch } from "../api/client";
+import { normalizeSnapshotId } from "../lib/formatting";
 import { backendUrl } from "./buildcfg";
 
 // Aegis Agent identity: where its releases, source code and docs live.
@@ -38,7 +39,30 @@ export interface AegisStatus {
   pending: number;
   instanceId?: string;
   repositories: AegisRepositoryPreset[];
+  runtime?: "docker" | "systemd" | "other";
 }
+
+/** The folder the Docker image writes restores to: ./aegis-agent/restores on the server. */
+export const dockerRestoreDir = "/restores";
+
+/**
+ * The target a restore of `path` from a snapshot suggests. Next to the
+ * original by default; in the Docker image the backed-up folders are mounted
+ * read-only under /userdata, so it goes to /restores instead. Restoring the
+ * whole snapshot suggests "" (the downloads folder of the interface).
+ */
+export const defaultRestoreTarget = (
+  path: string,
+  snapshotId: string,
+  runtime: AegisStatus["runtime"],
+  separator = "/",
+) => {
+  if (path === separator) return "";
+  const suffix = "-aegis-restore-" + normalizeSnapshotId(snapshotId);
+  if (runtime !== "docker") return path + suffix;
+  const name = path.split(separator).filter(Boolean).pop() ?? "restore";
+  return `${dockerRestoreDir}/${name}${suffix}`;
+};
 
 export const fetchAegisStatus = async (): Promise<AegisStatus | null> => {
   try {

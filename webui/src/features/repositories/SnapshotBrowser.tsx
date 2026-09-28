@@ -17,11 +17,12 @@ import {
   FiMoreHorizontal,
 } from "react-icons/fi";
 import { useShowModal } from "../../components/common/ModalManager";
-import { formatBytes, normalizeSnapshotId } from "../../lib/formatting";
+import { formatBytes } from "../../lib/formatting";
 import { URIAutocomplete } from "../../components/common/URIAutocomplete";
 import { backrestService } from "../../api/client";
 import { ConfirmButton } from "../../components/common/SpinButton";
 import { pathSeparator } from "../../state/buildcfg";
+import { defaultRestoreTarget, useAegisStatus } from "../../state/aegis";
 import { create, toJsonString } from "@bufbuild/protobuf";
 import {
   createTreeCollection,
@@ -435,18 +436,19 @@ const RestoreModal = ({
 }) => {
   const showModal = useShowModal();
   const [target, setTarget] = useState("");
+  const [edited, setEdited] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const runtime = useAegisStatus(0)?.runtime;
 
-  const defaultPath = useMemo(() => {
-    if (path === pathSeparator) {
-      return "";
-    }
-    return path + "-aegis-restore-" + normalizeSnapshotId(snapshotId);
-  }, [path]);
+  const defaultPath = useMemo(
+    () => defaultRestoreTarget(path, snapshotId, runtime, pathSeparator),
+    [path, snapshotId, runtime],
+  );
 
+  // The runtime arrives after the modal opens; a path typed by then stays.
   useEffect(() => {
-    setTarget(defaultPath);
-  }, [defaultPath]);
+    if (!edited) setTarget(defaultPath);
+  }, [defaultPath, edited]);
 
   const handleValid = () => {
     // Basic validation
@@ -509,7 +511,10 @@ const RestoreModal = ({
           <URIAutocomplete
             placeholder={m.snapshot_browser_restoring_to_downloads()}
             value={target}
-            onChange={(val: string) => setTarget(val || "")}
+            onChange={(val: string) => {
+              setEdited(true);
+              setTarget(val || "");
+            }}
           />
         </Field>
       </Stack>
