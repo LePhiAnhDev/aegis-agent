@@ -24,5 +24,5 @@ func main() {
 }
 
 func reportError(err error) {
-	zap.S().Errorf("backrest error: %v", err)
+	zap.S().Errorf("aegis-agent error: %v", err)
 }

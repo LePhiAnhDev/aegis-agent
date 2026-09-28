@@ -87,6 +87,18 @@ func TestResolveSchedule(t *testing.T) {
 			curTime:  now,
 			expected: time.Date(2023, 10, 31, 0, 0, 0, 0, time.Local),
 		},
+		{
+			name: "Cron - last run clock, never ran: due now",
+			schedule: &v1.Schedule{
+				Clock: v1.Schedule_CLOCK_LAST_RUN_TIME,
+				Schedule: &v1.Schedule_Cron{
+					Cron: "0 0 1 * *",
+				},
+			},
+			lastRan:  time.Time{},
+			curTime:  now,
+			expected: now,
+		},
 	}
 
 	for _, tt := range tests {

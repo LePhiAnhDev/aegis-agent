@@ -15,6 +15,9 @@ export default defineConfig({
     // 5s timeout under CI load; give headroom without masking real hangs.
     testTimeout: 20_000,
     setupFiles: ['./src/test/setup.tsx'],
+    // Node 25+ exposes its own global localStorage, which shadows jsdom's and is
+    // undefined without --localstorage-file; keep jsdom's Web Storage in tests.
+    execArgv: ['--no-experimental-webstorage'],
     include: ['src/**/*.test.{ts,tsx}'],
     restoreMocks: true,
     unstubGlobals: true,

@@ -17,7 +17,7 @@ func findHelper() (string, error) {
 	resticBinOverride := env.ResticBinPath()
 	if resticBinOverride != "" {
 		if err := assertResticVersion(resticBinOverride, false /* strict */); err != nil {
-			zap.S().Warnf("restic binary %q may not be supported by backrest: %v", resticBinOverride, err)
+			zap.S().Warnf("restic binary %q may not be supported by Aegis Agent: %v", resticBinOverride, err)
 		}
 
 		if _, err := os.Stat(resticBinOverride); err != nil {
@@ -32,10 +32,10 @@ func findHelper() (string, error) {
 	// Search the PATH for the specific restic version.
 	if binPath, err := exec.LookPath("restic"); err == nil {
 		if err := assertResticVersion(binPath, false /* strict */); err == nil {
-			zap.S().Infof("restic binary %q in $PATH matches required version %v, it will be used for backrest commands", binPath, RequiredResticVersion)
+			zap.S().Infof("restic binary %q in $PATH matches required version %v, it will be used for Aegis Agent commands", binPath, RequiredResticVersion)
 			return binPath, nil
 		} else {
-			zap.S().Infof("restic binary %q in $PATH is not being used, it may not be supported by backrest: %v", binPath, err)
+			zap.S().Infof("restic binary %q in $PATH is not being used, it may not be supported by Aegis Agent: %v", binPath, err)
 		}
 	}
 
@@ -45,7 +45,7 @@ func findHelper() (string, error) {
 	if _, err := os.Stat(resticInstallPath); err == nil {
 		// Found it. Check version but don't fail, just warn.
 		if err := assertResticVersion(resticInstallPath, false /* strict */); err != nil {
-			zap.S().Warnf("bundled restic binary %q may not be supported by backrest (this is expected if backrest was upgraded without the installer): %v", resticInstallPath, err)
+			zap.S().Warnf("bundled restic binary %q may not be supported by Aegis Agent (this is expected if Aegis Agent was upgraded without the installer): %v", resticInstallPath, err)
 		}
 		return resticInstallPath, nil
 	}

@@ -55,6 +55,13 @@ func ResolveSchedule(sched *v1.Schedule, lastRan time.Time, curTime time.Time) (
 		if err != nil {
 			return time.Time{}, fmt.Errorf("parse cron %q: %w", s.Cron, err)
 		}
+		if t.IsZero() {
+			// Aegis Agent: a last-run clock that never ran (a repo with backups
+			// but no check or prune yet) is due now, as the frequency schedules
+			// above are. cronexpr has no next time after the zero time, and the
+			// error stopped the agent from starting.
+			return curTime, nil
+		}
 		// Next evaluates the expression against t's own location, so the clock
 		// selection above (local / UTC / last run time) determines the zone the
 		// cron's wall-clock fields are interpreted in.

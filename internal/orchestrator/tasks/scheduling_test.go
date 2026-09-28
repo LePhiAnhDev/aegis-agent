@@ -66,6 +66,23 @@ func TestScheduling(t *testing.T) {
 					},
 				},
 			},
+			{
+				// Aegis Agent: the Web UI's defaults for a new repository.
+				Id:   "repo-default",
+				Guid: cryptoutil.MustRandomID(cryptoutil.DefaultIDBits),
+				CheckPolicy: &v1.CheckPolicy{
+					Schedule: &v1.Schedule{
+						Schedule: &v1.Schedule_Cron{Cron: "0 0 1 * *"},
+						Clock:    v1.Schedule_CLOCK_LAST_RUN_TIME,
+					},
+				},
+				PrunePolicy: &v1.PrunePolicy{
+					Schedule: &v1.Schedule{
+						Schedule: &v1.Schedule_Cron{Cron: "0 0 1 * *"},
+						Clock:    v1.Schedule_CLOCK_LAST_RUN_TIME,
+					},
+				},
+			},
 		},
 		Plans: []*v1.Plan{
 			{
@@ -136,7 +153,8 @@ func TestScheduling(t *testing.T) {
 	repo1 := config.FindRepo(cfg, "repo1")
 	repoAbsolute := config.FindRepo(cfg, "repo-absolute")
 	repoRelative := config.FindRepo(cfg, "repo-relative")
-	if repoAbsolute == nil || repoRelative == nil || repo1 == nil {
+	repoDefault := config.FindRepo(cfg, "repo-default")
+	if repoAbsolute == nil || repoRelative == nil || repo1 == nil || repoDefault == nil {
 		t.Fatalf("test config declaration error")
 	}
 
@@ -407,6 +425,43 @@ func TestScheduling(t *testing.T) {
 				},
 			},
 			wantTime: farFuture.Add(time.Hour),
+		},
+		{
+			// Aegis Agent: this used to fail and stop the agent from starting.
+			name: "check schedule cron since last run, backups but never checked",
+			task: NewCheckTask(repoDefault, "_system_", false),
+			ops: []*v1.Operation{
+				{
+					InstanceId: "instance1",
+					RepoId:     "repo-default",
+					RepoGuid:   repoDefault.Guid,
+					PlanId:     "plan-cron",
+					Op: &v1.Operation_OperationBackup{
+						OperationBackup: &v1.OperationBackup{},
+					},
+					UnixTimeStartMs: 1000,
+					UnixTimeEndMs:   2000,
+				},
+			},
+			wantTime: now,
+		},
+		{
+			name: "prune schedule cron since last run, backups but never pruned",
+			task: NewPruneTask(repoDefault, "_system_", false),
+			ops: []*v1.Operation{
+				{
+					InstanceId: "instance1",
+					RepoId:     "repo-default",
+					RepoGuid:   repoDefault.Guid,
+					PlanId:     "plan-cron",
+					Op: &v1.Operation_OperationBackup{
+						OperationBackup: &v1.OperationBackup{},
+					},
+					UnixTimeStartMs: 1000,
+					UnixTimeEndMs:   2000,
+				},
+			},
+			wantTime: now,
 		},
 	}
 

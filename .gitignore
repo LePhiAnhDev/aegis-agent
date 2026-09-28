@@ -3,6 +3,8 @@ result
 
 /backrest
 /backrest-*
+/aegis-agent
+/aegis-agent-*
 dist/*
 !webui/dist/.gitkeep
 __debug_bin

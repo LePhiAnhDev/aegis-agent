@@ -6,7 +6,7 @@ labels: enhancement
 assignees: ""
 ---
 
-Note: if you have a question or want discussion please post in the [discussions area](https://github.com/garethgeorge/backrest/discussions).
+Note: Aegis Agent is a modified version of Backrest. Suggest changes to Aegis Agent here, not to the Backrest project.
 
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is.

@@ -20,6 +20,7 @@ import (
 	v1 "github.com/garethgeorge/backrest/gen/go/v1"
 	"github.com/garethgeorge/backrest/gen/go/v1/v1connect"
 	"github.com/garethgeorge/backrest/gen/go/v1sync/v1syncconnect"
+	"github.com/garethgeorge/backrest/internal/aegis"
 	"github.com/garethgeorge/backrest/internal/api"
 	syncapi "github.com/garethgeorge/backrest/internal/api/syncapi"
 	"github.com/garethgeorge/backrest/internal/auth"
@@ -49,6 +50,9 @@ var (
 	commit  = "unknown"
 )
 
+// upstreamVersion is the Backrest release Aegis Agent is based on.
+const upstreamVersion = "1.14.1"
+
 // onOpLogReady, when set, is invoked with the OpLog once it is constructed.
 // The tray build (-tags tray) uses it to drive a status-reflecting menu bar
 // icon. It stays nil in non-tray builds, so this adds no behavior there.
@@ -57,7 +61,7 @@ var onOpLogReady func(*oplog.OpLog)
 func runApp() {
 	flag.Parse()
 	if *printVersion {
-		fmt.Printf("backrest version: %s, commit: %s\n", version, commit)
+		fmt.Printf("aegis-agent version: %s (based on Backrest %s), commit: %s\n", version, upstreamVersion, commit)
 		os.Exit(0)
 	}
 	installLoggers(version, commit)
@@ -128,9 +132,19 @@ func runApp() {
 	syncMgr := syncapi.NewSyncManager(configMgr, opLog, orch, peerStateManager)
 	authenticator := newAuthenticator(configMgr)
 
+	// Aegis Cloud reporting (one-way): configured by the AEGIS_* environment.
+	aegisCfg, err := aegis.ConfigFromEnv(version, resticinstaller.RequiredResticVersion)
+	if err != nil {
+		zap.L().Fatal("invalid Aegis Cloud settings", zap.Error(err))
+	}
+	reporter, err := aegis.NewReporter(aegisCfg, configMgr, opLog, logStore, sharedKvdb)
+	if err != nil {
+		zap.L().Fatal("error creating Aegis Cloud reporter", zap.Error(err))
+	}
+
 	// Start background services
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 	go func() {
 		defer wg.Done()
 		orch.Run(ctx)
@@ -139,9 +153,13 @@ func runApp() {
 		defer wg.Done()
 		syncMgr.RunSync(ctx)
 	}()
+	go func() {
+		defer wg.Done()
+		reporter.Run(ctx)
+	}()
 
 	// Setup and start HTTP server
-	server := newServer(configMgr, peerStateManager, orch, opLog, logStore, syncMgr, authenticator)
+	server := newServer(configMgr, peerStateManager, orch, opLog, logStore, syncMgr, authenticator, reporter.StatusHandler())
 	go func() {
 		<-ctx.Done()
 		server.Shutdown(context.Background())
@@ -164,7 +182,7 @@ func newOpLog(cfg *v1.Config) (*oplog.OpLog, *sqlitestore.SqliteStore, error) {
 	oplogFile := filepath.Join(env.DataDir(), "oplog.sqlite")
 	opstore, err := sqlitestore.NewSqliteStore(oplogFile)
 	if errors.Is(err, sqlitestore.ErrLocked) {
-		zap.L().Fatal("oplog is locked by another instance of backrest", zap.String("data_dir", env.DataDir()))
+		zap.L().Fatal("oplog is locked by another instance of aegis-agent", zap.String("data_dir", env.DataDir()))
 	} else if err != nil {
 		zap.L().Warn("operation log may be corrupted, if errors recur delete the file and restart. Your backups stored in your repos are safe.", zap.String("oplog_file", oplogFile))
 		return nil, nil, err
@@ -237,6 +255,7 @@ func newServer(
 	logStore *logstore.LogStore,
 	syncMgr *syncapi.SyncManager,
 	authenticator *auth.Authenticator,
+	aegisStatus http.Handler,
 ) *http.Server {
 	// API Handlers
 	apiBackrestHandler := api.NewBackrestHandler(configMgr, peerStateManager, orch, opLog, logStore)
@@ -246,7 +265,7 @@ func newServer(
 	downloadHandler := api.NewDownloadHandler(opLog, orch)
 
 	// Routing
-	rootMux := newRootMux(apiBackrestHandler, apiAuthenticationHandler, syncHandler, syncStateHandler, downloadHandler, authenticator)
+	rootMux := newRootMux(apiBackrestHandler, apiAuthenticationHandler, syncHandler, syncStateHandler, downloadHandler, authenticator, aegisStatus)
 
 	var handler http.Handler = rootMux
 	if version == "unknown" { // dev build, enable CORS for local development
@@ -266,6 +285,7 @@ func newRootMux(
 	syncStateHandler v1syncconnect.BackrestSyncStateServiceHandler,
 	downloadHandler http.Handler,
 	authenticator *auth.Authenticator,
+	aegisStatus http.Handler,
 ) *http.ServeMux {
 	// Authenticated routes
 	authedMux := http.NewServeMux()
@@ -274,6 +294,7 @@ func newRootMux(
 	syncStatePath, syncStateHandlerUnauthed := v1syncconnect.NewBackrestSyncStateServiceHandler(syncStateHandler)
 	authedMux.Handle(syncStatePath, syncStateHandlerUnauthed)
 	authedMux.Handle("/metrics", metric.GetRegistry().Handler())
+	authedMux.Handle("/aegis/status", aegisStatus)
 
 	// Unauthenticated routes
 	unauthedMux := http.NewServeMux()
@@ -370,7 +391,7 @@ func installLoggers(version, commit string) {
 	}
 
 	writer := &lumberjack.Logger{
-		Filename:   filepath.Join(logsDir, "backrest.log"),
+		Filename:   filepath.Join(logsDir, "aegis-agent.log"),
 		MaxSize:    5, // megabytes
 		MaxBackups: 3,
 		MaxAge:     14,
@@ -384,7 +405,7 @@ func installLoggers(version, commit string) {
 	)
 
 	zap.ReplaceGlobals(zap.New(zapcore.NewTee(pretty, ugly)))
-	zap.L().Info("backrest starting", zap.String("version", version), zap.String("commit", commit), zap.String("log_dir", logsDir))
+	zap.L().Info("aegis-agent starting", zap.String("version", version), zap.String("based_on", "Backrest "+upstreamVersion), zap.String("commit", commit), zap.String("log_dir", logsDir))
 }
 
 func migratePopulateGuids(logstore oplog.OpStore, cfg *v1.Config) {

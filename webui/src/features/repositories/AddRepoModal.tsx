@@ -6,6 +6,12 @@ import {
   Grid,
   Code,
   Box,
+  createListCollection,
+  SelectContent,
+  SelectItem,
+  SelectRoot,
+  SelectTrigger,
+  SelectValueText,
 } from "@chakra-ui/react";
 import { EnumSelector, EnumOption } from "../../components/common/EnumSelector";
 
@@ -35,6 +41,12 @@ import {
   ScheduleDefaultsDaily,
 } from "../../components/common/ScheduleFormItem";
 import { isWindows } from "../../state/buildcfg";
+import {
+  aegisStorageEnv,
+  isAegisRepoUri,
+  regionLabels,
+  useAegisStatus,
+} from "../../state/aegis";
 import { create, fromJson, toJson } from "@bufbuild/protobuf";
 import * as m from "../../paraglide/messages";
 import { Button } from "../../components/ui/button";
@@ -468,6 +480,36 @@ export const AddRepoModal = ({
     return curr;
   };
 
+  // Storages this server was attached to when Aegis Agent was installed.
+  const aegisStatus = useAegisStatus(0);
+  const aegisPresets = aegisStatus?.repositories ?? [];
+  const presetOptions = createListCollection({
+    items: aegisPresets.map((preset) => ({
+      label: `${preset.name} · ${regionLabels[preset.region] ?? preset.region}`,
+      value: preset.uri,
+    })),
+  });
+
+  // An Aegis Cloud storage: its repository URI, and restic's storage key read
+  // from the variables Aegis Agent was installed with.
+  const applyPreset = (uri: string) => {
+    const preset = aegisPresets.find((candidate) => candidate.uri === uri);
+    if (!preset) return;
+    updateField(["uri"], preset.uri);
+    const others = ((getField(["env"]) as string[] | undefined) || []).filter(
+      (entry) =>
+        !/^AWS_(ACCESS_KEY_ID|SECRET_ACCESS_KEY|DEFAULT_REGION)=/.test(entry),
+    );
+    updateField(["env"], [...others, ...aegisStorageEnv]);
+    if (!getField(["id"])) {
+      const id = preset.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      if (id) updateField(["id"], id);
+    }
+  };
+
   flagsRef.current = (formData.flags as string[]) || [];
 
   useEffect(() => {
@@ -527,6 +569,9 @@ export const AddRepoModal = ({
     const uri = getField(["uri"]);
     if (!uri?.trim()) {
       throw new Error(m.add_repo_modal_error_uri_required());
+    }
+    if (!template && !isAegisRepoUri(uri)) {
+      throw new Error(m.aegis_repo_uri_required());
     }
 
     await envVarSetValidator(formData);
@@ -891,29 +936,51 @@ export const AddRepoModal = ({
               description={m.add_repo_modal_where_the_repo_lives_and_how_backrest_authenticates()}
             >
               <Stack gap={4}>
+                {!template && (
+                  <Field
+                    label={m.aegis_storage_label()}
+                    helperText={
+                      aegisPresets.length > 0
+                        ? m.aegis_storage_hint()
+                        : m.aegis_storage_none()
+                    }
+                  >
+                    <SelectRoot
+                      collection={presetOptions}
+                      size="sm"
+                      value={
+                        aegisPresets.some(
+                          (preset) => preset.uri === getField(["uri"]),
+                        )
+                          ? [getField(["uri"])]
+                          : []
+                      }
+                      onValueChange={(e: any) => applyPreset(e.value[0])}
+                      disabled={aegisPresets.length === 0}
+                      width="full"
+                    >
+                      {/* @ts-ignore */}
+                      <SelectTrigger data-testid="add-repo-aegis-storage">
+                        {/* @ts-ignore */}
+                        <SelectValueText
+                          placeholder={m.aegis_storage_placeholder()}
+                        />
+                      </SelectTrigger>
+                      {/* @ts-ignore */}
+                      <SelectContent zIndex={2000}>
+                        {presetOptions.items.map((item) => (
+                          <SelectItem item={item} key={item.value}>
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </SelectRoot>
+                  </Field>
+                )}
+
                 <Field
                   label={m.add_repo_modal_field_uri()}
-                  helperText={
-                    <>
-                      {m.add_repo_modal_field_uri_tooltip_title()}
-                      <Box as="ul" ml={4} mt={1}>
-                        <li>{m.add_repo_modal_field_uri_tooltip_local()}</li>
-                        <li>{m.add_repo_modal_field_uri_tooltip_s3()}</li>
-                        <li>{m.add_repo_modal_field_uri_tooltip_sftp()}</li>
-                        <li>
-                          {m.add_repo_modal_guide_text_p1()}{" "}
-                          <a
-                            href="https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html#preparing-a-new-repository"
-                            target="_blank"
-                            style={{ textDecoration: "underline" }}
-                          >
-                            {m.add_plan_modal_field_excludes_tooltip_link()}
-                          </a>{" "}
-                          {m.add_repo_modal_field_uri_tooltip_info()}
-                        </li>
-                      </Box>
-                    </>
-                  }
+                  helperText={m.aegis_repo_uri_help()}
                   required
                 >
                   <URIAutocomplete

@@ -441,7 +441,7 @@ const RestoreModal = ({
     if (path === pathSeparator) {
       return "";
     }
-    return path + "-backrest-restore-" + normalizeSnapshotId(snapshotId);
+    return path + "-aegis-restore-" + normalizeSnapshotId(snapshotId);
   }, [path]);
 
   useEffect(() => {

@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as m from "../../paraglide/messages";
 import { AddRepoModal } from "./AddRepoModal";
 import { renderWithProviders } from "../../test/render";
-import { backrestService } from "../../api/client";
+import { authenticatedFetch, backrestService } from "../../api/client";
+import { aegisStorageEnv } from "../../state/aegis";
 import { alerts } from "../../components/common/Alerts";
 import { makeConfig, makeRepo, connectError, Code } from "../../test/proto";
 import { CheckRepoExistsResponseSchema } from "../../../gen/ts/v1/service_pb";
@@ -21,17 +22,31 @@ const getUriInput = (): HTMLInputElement =>
 const getPasswordInput = (): HTMLInputElement =>
   screen.getByLabelText(m.login_password_placeholder()) as HTMLInputElement;
 
-// Fills the three required create-mode fields (name / uri / password).
+const AEGIS_URI =
+  "s3:https://0123456789abcdef0123456789abcdef.r2.cloudflarestorage.com/aegis-abc123-apac-xyz789/servers/agt_exampleid001";
+
+// What /aegis/status offers: the storages the server was installed with.
+const aegisStatus = {
+  enabled: true,
+  state: "connected",
+  pending: 0,
+  instanceId: "test-instance",
+  repositories: [{ name: "Asia primary", region: "apac", uri: AEGIS_URI }],
+};
+
+// Fills the required create-mode fields: name, an Aegis Cloud storage (which
+// sets the URI and the storage key variables), and the repository password.
 const fillCreateForm = async (
   user: ReturnType<typeof renderWithProviders>["user"],
-  { id, uri, password }: { id: string; uri: string; password: string },
+  { id, password }: { id: string; password: string },
 ) => {
   const nameInput = await screen.findByPlaceholderText("repo1");
   await user.type(nameInput, id);
-  // The autocomplete combobox drops characters under per-key typing; paste the
-  // whole URI in a single input event instead.
-  await user.click(getUriInput());
-  await user.paste(uri);
+  const storage = await screen.findByTestId("add-repo-aegis-storage");
+  await waitFor(() => expect(storage).toBeEnabled());
+  await user.click(storage);
+  await user.click(await screen.findByRole("option", { name: /Asia primary/ }));
+  await waitFor(() => expect(getUriInput()).toHaveValue(AEGIS_URI));
   await user.type(getPasswordInput(), password);
 };
 
@@ -44,6 +59,9 @@ describe("AddRepoModal", () => {
     );
     vi.mocked(backrestService.listSnapshots).mockResolvedValue(
       create(ResticSnapshotListSchema, {}),
+    );
+    vi.mocked(authenticatedFetch).mockImplementation(
+      async () => new Response(JSON.stringify(aegisStatus)),
     );
   });
 
@@ -86,7 +104,7 @@ describe("AddRepoModal", () => {
   it("creates a repo: calls addRepo, updates config context, and shows a success toast", async () => {
     const successSpy = vi.spyOn(alerts, "success");
     const resolvedConfig = makeConfig({
-      repos: [makeRepo({ id: "myrepo", uri: "/tmp/repo" })],
+      repos: [makeRepo({ id: "myrepo", uri: AEGIS_URI })],
     });
     vi.mocked(backrestService.addRepo).mockResolvedValue(resolvedConfig);
 
@@ -97,7 +115,6 @@ describe("AddRepoModal", () => {
 
     await fillCreateForm(user, {
       id: "myrepo",
-      uri: "/tmp/repo",
       password: "supersecret",
     });
 
@@ -114,14 +131,15 @@ describe("AddRepoModal", () => {
       expect.objectContaining({
         repo: expect.objectContaining({
           id: "myrepo",
-          uri: "/tmp/repo",
+          uri: AEGIS_URI,
           password: "supersecret",
+          env: aegisStorageEnv,
         }),
       }),
     );
     expect(setConfig).toHaveBeenCalledWith(resolvedConfig);
     expect(successSpy).toHaveBeenCalledWith(
-      m.add_repo_modal_success_added({ uri: "/tmp/repo" }),
+      m.add_repo_modal_success_added({ uri: AEGIS_URI }),
     );
   });
 
@@ -137,7 +155,6 @@ describe("AddRepoModal", () => {
 
     await fillCreateForm(user, {
       id: "myrepo",
-      uri: "/tmp/repo",
       password: "supersecret",
     });
 
@@ -150,13 +167,33 @@ describe("AddRepoModal", () => {
     );
     expect(backrestService.checkRepoExists).toHaveBeenCalledWith(
       expect.objectContaining({
-        repo: expect.objectContaining({ id: "myrepo", uri: "/tmp/repo" }),
+        repo: expect.objectContaining({ id: "myrepo", uri: AEGIS_URI }),
       }),
     );
     expect(backrestService.addRepo).not.toHaveBeenCalled();
     expect(successSpy).toHaveBeenCalledWith(
-      m.add_repo_modal_test_success_existing({ uri: "/tmp/repo" }),
+      m.add_repo_modal_test_success_existing({ uri: AEGIS_URI }),
     );
+  });
+
+  it("refuses a repository that is not on an Aegis Cloud storage", async () => {
+    const errorSpy = vi.spyOn(alerts, "error");
+    const { user } = renderWithProviders(<AddRepoModal template={null} />, {
+      config: makeConfig(),
+    });
+
+    await user.type(await screen.findByPlaceholderText("repo1"), "local");
+    await user.click(getUriInput());
+    await user.paste("/tmp/repo");
+    await user.type(getPasswordInput(), "supersecret");
+    await user.click(
+      screen.getByRole("button", { name: m.add_plan_modal_button_submit() }),
+    );
+
+    await waitFor(() => expect(errorSpy).toHaveBeenCalled());
+    const [content] = errorSpy.mock.calls[errorSpy.mock.calls.length - 1];
+    expect(String(content)).toContain(m.aegis_repo_uri_required());
+    expect(backrestService.addRepo).not.toHaveBeenCalled();
   });
 
   it("edit mode prefills and disables identity fields and deletes via confirm", async () => {
@@ -209,7 +246,6 @@ describe("AddRepoModal", () => {
 
     await fillCreateForm(user, {
       id: "myrepo",
-      uri: "/tmp/repo",
       password: "supersecret",
     });
 
@@ -221,13 +257,13 @@ describe("AddRepoModal", () => {
     expect(onSaveOverride).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "myrepo",
-        uri: "/tmp/repo",
+        uri: AEGIS_URI,
         password: "supersecret",
       }),
     );
     expect(backrestService.addRepo).not.toHaveBeenCalled();
     expect(successSpy).toHaveBeenCalledWith(
-      m.add_repo_modal_success_updated({ uri: "/tmp/repo" }),
+      m.add_repo_modal_success_updated({ uri: AEGIS_URI }),
     );
   });
 
@@ -243,7 +279,6 @@ describe("AddRepoModal", () => {
 
     await fillCreateForm(user, {
       id: "myrepo",
-      uri: "/tmp/repo",
       password: "supersecret",
     });
 

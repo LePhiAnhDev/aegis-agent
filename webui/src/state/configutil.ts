@@ -4,6 +4,8 @@ export const shouldShowSettings = (config: Config) => {
   return (
     !config.instance ||
     !config.auth ||
-    (!config.auth.disabled && config.auth.users.length === 0)
+    // Aegis Agent always requires a login.
+    config.auth.disabled ||
+    config.auth.users.length === 0
   );
 };

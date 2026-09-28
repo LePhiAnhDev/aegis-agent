@@ -28,11 +28,11 @@ describe("shouldShowSettings", () => {
     expect(shouldShowSettings(config)).toBe(true);
   });
 
-  it("is false when instance is set and auth is explicitly disabled", () => {
+  it("is true when auth is disabled: Aegis Agent always requires a login", () => {
     const config = makeConfig({
       auth: create(AuthSchema, { disabled: true, users: [] }),
     });
-    expect(shouldShowSettings(config)).toBe(false);
+    expect(shouldShowSettings(config)).toBe(true);
   });
 
   it("is false when instance is set, auth is enabled, and at least one user exists", () => {

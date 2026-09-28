@@ -32,14 +32,14 @@ func ApplyMigrations(config *v1.Config) error {
 	if startMigration < 0 {
 		startMigration = 0
 	} else if startMigration > int(CurrentVersion) {
-		zap.S().Warnf("config version %d is greater than the latest known spec %d. Were you previously running a newer version of backrest? Ensure that your install is up to date.", startMigration, CurrentVersion)
+		zap.S().Warnf("config version %d is greater than the latest known spec %d. Were you previously running a newer version of Aegis Agent? Ensure that your install is up to date.", startMigration, CurrentVersion)
 		return fmt.Errorf("config version %d is greater than the latest known config format %d", startMigration, CurrentVersion)
 	}
 
 	for idx := startMigration; idx < len(migrations); idx += 1 {
 		m := migrations[idx]
 		if m == &noop {
-			return fmt.Errorf("config version %d is too old to migrate, please try first upgrading to backrest 1.4.0 which is the last version that may be compatible with your config", config.Version)
+			return fmt.Errorf("config version %d is too old to migrate, it predates Backrest 1.4.0 (the upstream project Aegis Agent is based on); upgrade it with Backrest 1.4.0 first", config.Version)
 		}
 		if err := (*m)(config); err != nil {
 			return err

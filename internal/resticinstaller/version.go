@@ -39,9 +39,9 @@ func assertResticVersion(binary string, strict bool) error {
 		if cmp < 0 {
 			return fmt.Errorf("restic version %v is less than required version %v", version, RequiredResticVersion)
 		} else if cmp > 0 && strict {
-			return fmt.Errorf("restic version %v is newer than required version %v, it may not be supported by backrest", version, RequiredResticVersion)
+			return fmt.Errorf("restic version %v is newer than required version %v, it may not be supported by Aegis Agent", version, RequiredResticVersion)
 		} else if cmp > 0 {
-			zap.S().Warnf("restic version %v is newer than required version %v, it may not be supported by backrest", version, RequiredResticVersion)
+			zap.S().Warnf("restic version %v is newer than required version %v, it may not be supported by Aegis Agent", version, RequiredResticVersion)
 		}
 	}
 	return nil

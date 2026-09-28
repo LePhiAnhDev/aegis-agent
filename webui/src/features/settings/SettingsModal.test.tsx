@@ -1,6 +1,6 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { create } from "@bufbuild/protobuf";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as m from "../../paraglide/messages";
 import { SettingsModal } from "./SettingsModal";
 import { renderWithProviders } from "../../test/render";
@@ -10,7 +10,11 @@ import {
   connectError,
   Code,
 } from "../../test/proto";
-import { backrestService, authenticationService } from "../../api/client";
+import {
+  authenticatedFetch,
+  backrestService,
+  authenticationService,
+} from "../../api/client";
 import { alerts } from "../../components/common/Alerts";
 import { StringValueSchema } from "../../../gen/ts/types/value_pb";
 
@@ -32,6 +36,13 @@ const getSaveButton = () =>
   screen.getByRole("button", { name: /save changes/i });
 
 describe("SettingsModal (first-run path)", () => {
+  // No Aegis status unless a test provides one.
+  beforeEach(() => {
+    vi.mocked(authenticatedFetch).mockImplementation(
+      async () => new Response(null, { status: 404 }),
+    );
+  });
+
   it("renders the initial-setup prompt with an empty, editable instance field", async () => {
     primeDefaults();
     renderWithProviders(<SettingsModal />, { config: makeFirstRunConfig() });
@@ -59,11 +70,9 @@ describe("SettingsModal (first-run path)", () => {
     expect(backrestService.setConfig).not.toHaveBeenCalled();
   });
 
-  it("saves with authentication disabled and does not hash any password", async () => {
+  it("always requires a login: no switch turns it off, and saving needs a user", async () => {
     primeDefaults();
-    vi.mocked(backrestService.setConfig).mockResolvedValue(
-      makeConfig({ instance: "my-instance", auth: { disabled: true } }),
-    );
+    const errorSpy = vi.spyOn(alerts, "error");
 
     const { user } = renderWithProviders(<SettingsModal />, {
       config: makeFirstRunConfig(),
@@ -72,27 +81,40 @@ describe("SettingsModal (first-run path)", () => {
     const instanceInput =
       await screen.findByPlaceholderText(instancePlaceholder);
     await user.type(instanceInput, "my-instance");
-
-    // The disable-auth control is a hidden native checkbox rendered by
-    // ToggleField; click it directly (the visible label wraps it).
-    const disableSwitch = document.querySelector(
-      'input[type="checkbox"]',
-    ) as HTMLInputElement;
-    expect(disableSwitch).toBeTruthy();
-    fireEvent.click(disableSwitch);
+    expect(screen.queryByTestId("settings-disable-auth")).toBeNull();
+    expect(screen.queryByText(m.settings_auth_disable())).toBeNull();
 
     await waitFor(() => expect(getSaveButton()).toBeEnabled());
     await user.click(getSaveButton());
 
-    await waitFor(() => {
-      expect(backrestService.setConfig).toHaveBeenCalledWith(
-        expect.objectContaining({
-          instance: "my-instance",
-          auth: expect.objectContaining({ disabled: true }),
-        }),
-      );
-    });
+    await waitFor(() => expect(errorSpy).toHaveBeenCalled());
+    const [content] = errorSpy.mock.calls[errorSpy.mock.calls.length - 1];
+    expect(String(content)).toContain(m.aegis_login_required());
+    expect(backrestService.setConfig).not.toHaveBeenCalled();
     expect(authenticationService.hashPassword).not.toHaveBeenCalled();
+  });
+
+  it("offers the instance ID Aegis Cloud suggested for this server", async () => {
+    primeDefaults();
+    vi.mocked(authenticatedFetch).mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({
+            enabled: true,
+            state: "connected",
+            pending: 0,
+            instanceId: "web-prod-01",
+            repositories: [],
+          }),
+        ),
+    );
+
+    renderWithProviders(<SettingsModal />, { config: makeFirstRunConfig() });
+
+    const instanceInput =
+      await screen.findByPlaceholderText(instancePlaceholder);
+    await waitFor(() => expect(instanceInput).toHaveValue("web-prod-01"));
+    expect(instanceInput).toBeEnabled();
   });
 
   it("hashes a new user's password and saves the hashed credential", async () => {
@@ -166,10 +188,17 @@ describe("SettingsModal (first-run path)", () => {
       await screen.findByPlaceholderText(instancePlaceholder);
     await user.type(instanceInput, "my-instance");
 
-    const disableSwitch = document.querySelector(
-      'input[type="checkbox"]',
-    ) as HTMLInputElement;
-    fireEvent.click(disableSwitch);
+    await user.click(
+      screen.getByRole("button", { name: m.settings_auth_add_user() }),
+    );
+    await user.type(
+      await screen.findByPlaceholderText(m.login_username_placeholder()),
+      "alice",
+    );
+    await user.type(
+      screen.getByPlaceholderText(m.login_password_placeholder()),
+      "plaintext-pw",
+    );
 
     await waitFor(() => expect(getSaveButton()).toBeEnabled());
     await user.click(getSaveButton());

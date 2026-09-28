@@ -141,20 +141,20 @@ func (v HookVars) renderTemplate(templ string) (string, error) {
 
 var templateDefault = `
 {{ if .Error -}}
-Backrest Error
+Aegis Agent Error
 Task: {{ .Task }} at {{ .FormatTime .CurTime }}
 Event: {{ .EventName .Event }}
 Repo: {{ .Repo.Id }}
 Error: {{ .Error }}
 {{ else -}}
-Backrest Notification
+Aegis Agent Notification
 Task: {{ .Task }} at {{ .FormatTime .CurTime }}
 Event: {{ .EventName .Event }}
 {{ end }}
 `
 
 var templateForSnapshotEnd = `
-Backrest Snapshot Notification
+Aegis Agent Snapshot Notification
 Task: {{ .Task }} at {{ .FormatTime .CurTime }}
 Event: {{ .EventName .Event }}
 Snapshot: {{ .SnapshotId }}
@@ -182,7 +182,7 @@ Backup Statistics:
 {{ end }}`
 
 var templateForSnapshotStart = `
-Backrest Notification for Snapshot Start
+Aegis Agent Notification for Snapshot Start
 Task: "{{ .Task }}" at {{ .FormatTime .CurTime }}
 Event: {{ .EventName .Event }}
 Repo: {{ .Repo.Id }} 

@@ -28,7 +28,7 @@ func SanitizeID(id string) string {
 // The maxLen parameter is the maximum length of the ID. If maxLen is 0, the ID length is not checked.
 func ValidateID(id string, maxLen int) error {
 	if strings.HasPrefix(id, "_") && strings.HasSuffix(id, "_") {
-		return errors.New("IDs starting and ending with '_' are reserved by backrest")
+		return errors.New("IDs starting and ending with '_' are reserved by Aegis Agent")
 	}
 	if !idRegex.MatchString(id) {
 		return ErrInvalidChars

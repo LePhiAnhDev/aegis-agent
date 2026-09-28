@@ -92,10 +92,10 @@ var migration005CheckRepoPasswords = func(config *v1.Config) error {
 	b.WriteString("IMPORTANT: Backrest detected a potential password conflict affecting your restic repos (see https://github.com/garethgeorge/backrest/issues/1139).\n")
 	b.WriteString("\n")
 	b.WriteString("What happened:\n")
-	b.WriteString("  Backrest was using the wrong password for restic repos. The environment variables listed\n")
-	b.WriteString("  below were inherited by Backrest's process and previously took precedence over the password\n")
+	b.WriteString("  Aegis Agent was using the wrong password for restic repos. The environment variables listed\n")
+	b.WriteString("  below were inherited by Aegis Agent's process and previously took precedence over the password\n")
 	b.WriteString("  you configured in the UI. Your repos may have been encrypted with a different password than\n")
-	b.WriteString("  what your Backrest config says.\n")
+	b.WriteString("  what your Aegis Agent config says.\n")
 	b.WriteString("\n")
 	b.WriteString("Conflicting environment variables found:\n")
 	for _, envVar := range setEnvVars {
@@ -108,8 +108,8 @@ var migration005CheckRepoPasswords = func(config *v1.Config) error {
 	}
 	b.WriteString("\n")
 	b.WriteString("How to fix:\n")
-	b.WriteString("  Rerun Backrest with ISSUE_1139_FIX_PASSWORDS=1 set in the environment.\n")
-	b.WriteString("  Backrest will automatically update each affected repo's config as follows,\n")
+	b.WriteString("  Rerun Aegis Agent with ISSUE_1139_FIX_PASSWORDS=1 set in the environment.\n")
+	b.WriteString("  Aegis Agent will automatically update each affected repo's config as follows,\n")
 	b.WriteString("  then write the corrected config to disk and start normally:\n")
 	b.WriteString("\n")
 	b.WriteString("    RESTIC_PASSWORD:         the env var's value is written into the repo's\n")
@@ -120,7 +120,7 @@ var migration005CheckRepoPasswords = func(config *v1.Config) error {
 	b.WriteString("                             restic continues to resolve the password the same way.\n")
 	b.WriteString("\n")
 	b.WriteString("  Once the fix has been applied you can remove the conflicting environment variable\n")
-	b.WriteString("  from your Backrest process environment — the password source will be stored\n")
+	b.WriteString("  from your Aegis Agent process environment — the password source will be stored\n")
 	b.WriteString("  explicitly in the repo config from that point on.\n")
 
 	return fmt.Errorf("%s", b.String())

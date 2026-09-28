@@ -26,7 +26,7 @@ func startTray() {
 var mStatusText *systray.MenuItem
 
 func onReady(status *trayStatus) {
-	systray.SetTooltip("Backrest")
+	systray.SetTooltip("Aegis Agent")
 	systray.SetIcon(icon)
 
 	if runtime.GOOS == "darwin" {
@@ -35,9 +35,9 @@ func onReady(status *trayStatus) {
 		mStatusText.Hide()
 	}
 
-	mOpenUI := systray.AddMenuItem("Open WebUI", "Open the Backrest WebUI in your default browser")
-	mOpenLog := systray.AddMenuItem("Open Log Dir", "Open the Backrest log directory")
-	mQuit := systray.AddMenuItem("Quit", "Kills the backrest process and exits the tray app")
+	mOpenUI := systray.AddMenuItem("Open WebUI", "Open the Aegis Agent web interface in your default browser")
+	mOpenLog := systray.AddMenuItem("Open Log Dir", "Open the Aegis Agent log directory")
+	mQuit := systray.AddMenuItem("Quit", "Stops Aegis Agent and exits the tray app")
 
 	// The tray is live, so icon writes now take effect: start reflecting status.
 	go status.run()

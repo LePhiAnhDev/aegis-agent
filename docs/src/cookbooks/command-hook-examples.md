@@ -2,11 +2,11 @@
 
 ## Overview
 
-Command hooks in Backrest enable you to execute shell commands in response to specific lifecycle events, extending Backrest's functionality. This cookbook provides practical examples of command hooks for various use cases.
+Command hooks in Aegis Agent enable you to execute shell commands in response to specific lifecycle events, extending Aegis Agent's functionality. This cookbook provides practical examples of command hooks for various use cases.
 
 ## Error Behavior Configuration
 
-When using command hooks with `CONDITION_SNAPSHOT_START`, you can control how Backrest responds to script exit statuses:
+When using command hooks with `CONDITION_SNAPSHOT_START`, you can control how Aegis Agent responds to script exit statuses:
 
 | Behavior          | Description                                                             |
 | ----------------- | ----------------------------------------------------------------------- |
@@ -44,9 +44,9 @@ Display system notifications for backup events.
 ```bash v-pre
 #!/bin/bash
 {{ if .Error -}}
-osascript -e 'display notification "{{ .ShellEscape .Task }} failed" with title "Backrest"'
+osascript -e 'display notification "{{ .ShellEscape .Task }} failed" with title "Aegis Agent"'
 {{ else -}}
-osascript -e 'display notification "{{ .ShellEscape .Task }} succeeded" with title "Backrest"'
+osascript -e 'display notification "{{ .ShellEscape .Task }} succeeded" with title "Aegis Agent"'
 {{ end -}}
 ```
 
@@ -114,7 +114,7 @@ Create and manage BTRFS snapshots for consistent backups.
 
 ```bash
 #!/bin/bash
-btrfs subvolume snapshot -r /your-btrfs-filesystem /your-btrfs-filesystem/.backrest-snapshot
+btrfs subvolume snapshot -r /your-btrfs-filesystem /your-btrfs-filesystem/.aegis-snapshot
 ```
 
 **Post-backup Cleanup**  
@@ -123,7 +123,7 @@ btrfs subvolume snapshot -r /your-btrfs-filesystem /your-btrfs-filesystem/.backr
 
 ```bash
 #!/bin/bash
-btrfs subvolume delete /your-btrfs-filesystem/.backrest-snapshot
+btrfs subvolume delete /your-btrfs-filesystem/.aegis-snapshot
 ```
 
 ## Windows Examples
@@ -141,7 +141,7 @@ $options = [System.Windows.Forms.MessageBoxOptions]::ServiceNotification
 $defbutton = [System.Windows.Forms.MessageBoxDefaultButton]::Button1
 $buttons = [System.Windows.Forms.MessageBoxButtons]::OK
 $icon = [System.Windows.Forms.MessageBoxIcon]::Error
-$title = "Backrest"
+$title = "Aegis Agent"
 $message = '{{ .Summary }}'
 [System.Windows.Forms.MessageBox]::Show($message, $title, $buttons, $icon, $defbutton, $options)
 ```
@@ -157,7 +157,7 @@ $balloon = New-Object System.Windows.Forms.NotifyIcon
 $balloon.Icon = [System.Drawing.SystemIcons]::Warning
 $balloon.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Warning
 $balloon.BalloonTipText = '{{ .Summary }}'
-$balloon.BalloonTipTitle = "Backrest"
+$balloon.BalloonTipTitle = "Aegis Agent"
 $balloon.Visible = $true
 $balloon.ShowBalloonTip(5000)
 Start-Sleep -Seconds(5)
@@ -177,7 +177,7 @@ $balloon = New-Object System.Windows.Forms.NotifyIcon
 $balloon.Icon = [System.Drawing.SystemIcons]::Information
 $balloon.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
 $balloon.BalloonTipText = '{{ .Summary }}'
-$balloon.BalloonTipTitle = "Backrest"
+$balloon.BalloonTipTitle = "Aegis Agent"
 $balloon.Visible = $true
 $balloon.ShowBalloonTip(5000)
 Start-Sleep -Seconds(5)

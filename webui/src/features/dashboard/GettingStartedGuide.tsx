@@ -20,6 +20,12 @@ import { ConfigSchema } from "../../../gen/ts/v1/config_pb";
 import { isDevBuild } from "../../state/buildcfg";
 import { toJsonString } from "@bufbuild/protobuf";
 import * as m from "../../paraglide/messages";
+import {
+  readmeUrl,
+  releasesUrl,
+  sourceRepoUrl,
+  upstreamVersion,
+} from "../../state/aegis";
 
 export const GettingStartedGuide = () => {
   const [config] = useConfig();
@@ -40,12 +46,15 @@ export const GettingStartedGuide = () => {
       </Heading>
 
       <Text mb={4}>
-        <Link
-          href="https://github.com/garethgeorge/backrest"
-          target="_blank"
-          colorPalette="blue"
-        >
+        <Link href={releasesUrl} target="_blank" colorPalette="blue">
           {m.dashboard_getting_started_check()}
+        </Link>
+      </Text>
+
+      <Text mb={4} color="fg.muted" fontSize="sm">
+        {m.aegis_attribution({ upstreamVersion })}{" "}
+        <Link href={sourceRepoUrl} target="_blank" colorPalette="blue">
+          {m.aegis_source_code_link()}
         </Link>
       </Text>
 
@@ -69,11 +78,7 @@ export const GettingStartedGuide = () => {
         </List.Item>
         <List.Item>
           {m.add_repo_modal_guide_text_p1()}
-          <Link
-            href="https://garethgeorge.github.io/backrest"
-            target="_blank"
-            colorPalette="blue"
-          >
+          <Link href={readmeUrl} target="_blank" colorPalette="blue">
             {m.dashboard_getting_started_overview_d_b()}
           </Link>
           {m.dashboard_getting_started_overview_d_c()}

@@ -1,5 +1,17 @@
 # Changelog
 
+## Aegis Agent 1.0.0 (2026-09-28)
+
+First release of Aegis Agent, based on Backrest 1.14.1 with the later upstream changes up to commit 148ba12c. Everything changed from Backrest is listed in [NOTICE](./NOTICE).
+
+- Reports every backup, prune, check and forget to Aegis Cloud, along with running backups, the repositories and plans, and a heartbeat. Repository passwords, storage keys, restic command lines and snapshot contents are never sent.
+- New repositories are created on the Aegis Cloud storages the server was installed with; the storage key comes from the environment.
+- Login is always required. Notification hooks other than commands, and multihost sync, are hidden: alerts come from Aegis Cloud.
+- Linux releases for x86_64 and arm64 with restic 0.19.1, installed as a systemd service by `install.sh`; Docker image `lephianhdev386ht/aegis-agent` for linux/amd64 and linux/arm64.
+- Fix: a repository with backups but no check or prune yet no longer stops the agent from starting when that schedule is a cron expression counted from the last run.
+
+The Backrest changelog follows.
+
 ## [1.14.1](https://github.com/garethgeorge/backrest/compare/v1.14.0...v1.14.1) (2026-07-12)
 
 

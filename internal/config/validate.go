@@ -20,7 +20,7 @@ func ValidateConfig(c *v1.Config) error {
 
 	if e := validationutil.ValidateID(c.Instance, validationutil.IDMaxLen); e != nil {
 		if errors.Is(e, validationutil.ErrEmpty) {
-			zap.L().Warn("ACTION REQUIRED: instance ID is empty, will be required in a future update. Please open the backrest UI to set a unique instance ID. Until fixed this warning (and related errors) will print periodically.")
+			zap.L().Warn("ACTION REQUIRED: instance ID is empty, will be required in a future update. Please open the Aegis Agent UI to set a unique instance ID. Until fixed this warning (and related errors) will print periodically.")
 		} else {
 			err = multierror.Append(err, fmt.Errorf("instance ID %q invalid: %w", c.Instance, e))
 		}

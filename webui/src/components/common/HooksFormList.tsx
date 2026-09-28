@@ -30,6 +30,7 @@ import { Tooltip } from "../ui/tooltip";
 import { Link } from "../ui/link";
 import { EnumSelector, EnumOption } from "./EnumSelector";
 import * as m from "../../paraglide/messages";
+import { docsUrl } from "../../state/aegis";
 
 export interface HookFields {
   conditions: string[];
@@ -48,7 +49,7 @@ export const hooksListTooltipText = (
   <Text as="span">
     {m.hooks_from_list_a()}
     <Link
-      href="https://garethgeorge.github.io/backrest/docs/hooks"
+      href={docsUrl("docs/aegis/hooks.md")}
       target="_blank"
       color="blue.500"
     >
@@ -56,7 +57,7 @@ export const hooksListTooltipText = (
     </Link>
     {m.hooks_from_list_c()}
     <Link
-      href="https://garethgeorge.github.io/backrest/cookbooks/command-hook-examples"
+      href={docsUrl("docs/src/cookbooks/command-hook-examples.md")}
       target="_blank"
       color="blue.500"
     >
@@ -172,7 +173,7 @@ export const HooksFormList = ({
         {/* @ts-ignore */}
         <MenuContent zIndex={2000}>
           <SimpleGrid columns={3} gap={2} p={2}>
-            {hookTypes.map((type) => (
+            {addableHookTypes.map((type) => (
               // @ts-ignore
               <MenuItem
                 key={type.name}
@@ -384,7 +385,7 @@ const hookTypes: {
         token: "",
         template: "{{ .Summary }}",
         titleTemplate:
-          "Backrest {{ .EventName .Event }} in plan {{ .Plan.Id }}",
+          "Aegis Agent {{ .EventName .Event }} in plan {{ .Plan.Id }}",
         priority: 5,
       },
       conditions: [],
@@ -569,6 +570,12 @@ const hookTypes: {
     },
   },
 ];
+
+// Aegis Cloud handles notifications (Telegram); Aegis Agent offers command hooks
+// for automation around backups. Hooks of other kinds already configured still show.
+const addableHookTypes = hookTypes.filter(
+  (type) => type.oneofKey === "actionCommand",
+);
 
 const findHookTypeName = (field: HookFields): string => {
   if (!field) {

@@ -39,7 +39,7 @@ func (slackHandler) Execute(ctx context.Context, cmd *v1.Hook, vars interface{},
 		request := struct {
 			Text string `json:"text"`
 		}{
-			Text: "Backrest Notification\n" + payload,
+			Text: "Aegis Agent Notification\n" + payload,
 		}
 		requestBytes, _ = json.Marshal(request)
 	}

@@ -29,7 +29,7 @@ func (gotifyHandler) Execute(ctx context.Context, h *v1.Hook, vars interface{}, 
 		return fmt.Errorf("template rendering: %w", err)
 	}
 
-	title, err := hookutil.RenderTemplateOrDefault(g.GetTitleTemplate(), "Backrest Event", vars)
+	title, err := hookutil.RenderTemplateOrDefault(g.GetTitleTemplate(), "Aegis Agent Event", vars)
 	if err != nil {
 		return fmt.Errorf("title template rendering: %w", err)
 	}

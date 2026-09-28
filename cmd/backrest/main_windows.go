@@ -20,5 +20,5 @@ func main() {
 }
 
 func reportError(err error) {
-	zenity.Error(err.Error(), zenity.Title("Backrest Error"))
+	zenity.Error(err.Error(), zenity.Title("Aegis Agent Error"))
 }

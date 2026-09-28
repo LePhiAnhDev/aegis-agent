@@ -7,7 +7,7 @@ import {
   Text,
   Box,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useShowModal } from "../../components/common/ModalManager";
 import {
   FiPlus as Plus,
@@ -53,7 +53,7 @@ import {
   type SectionDef,
 } from "../../components/common/TwoPaneModal";
 import { SectionCard } from "../../components/common/SectionCard";
-import { ToggleField } from "../../components/common/ToggleField";
+import { docsUrl, useAegisStatus } from "../../state/aegis";
 
 export const SettingsModal = () => {
   const [config, setConfig] = useConfig();
@@ -79,7 +79,8 @@ export const SettingsModal = () => {
     return {
       instance: config.instance || "",
       auth: {
-        disabled: config.auth?.disabled || false,
+        // Aegis Agent always requires a login.
+        disabled: false,
         users:
           config.auth?.users?.map((u: any) => ({
             ...(toJson(UserSchema, u, { alwaysEmitImplicit: true }) as any),
@@ -186,6 +187,15 @@ export const SettingsModal = () => {
     return curr;
   };
 
+  // Aegis Cloud suggested an instance ID for this server: offer it on first run.
+  const aegisStatus = useAegisStatus(0);
+  useEffect(() => {
+    const suggested = aegisStatus?.instanceId;
+    if (suggested && !config?.instance && !formData?.instance) {
+      updateField(["instance"], suggested);
+    }
+  }, [aegisStatus?.instanceId]);
+
   const handleOk = async () => {
     setConfirmLoading(true);
     try {
@@ -213,10 +223,8 @@ export const SettingsModal = () => {
       });
       newConfig.instance = workingData.instance;
 
-      if (!newConfig.auth?.users && !newConfig.auth?.disabled) {
-        throw new Error(
-          m.settings_modal_at_least_one_user_must_be_configured_or_authentication_must(),
-        );
+      if (!newConfig.auth?.users?.length) {
+        throw new Error(m.aegis_login_required());
       }
 
       setConfig(await backrestService.setConfig(newConfig));
@@ -318,14 +326,6 @@ export const SettingsModal = () => {
           description={m.settings_modal_user_accounts_and_access_control()}
         >
           <Stack gap={4}>
-            <ToggleField
-              testId="settings-disable-auth"
-              checked={getField(["auth", "disabled"]) || false}
-              onChange={(v) => updateField(["auth", "disabled"], v)}
-              label={m.settings_auth_disable()}
-              hint="When disabled, no login is required to access Backrest."
-            />
-
             <Field label={m.settings_auth_users()} required>
               <Stack gap={3} width="full">
                 {users.map((user: any, index: number) => (
@@ -411,7 +411,7 @@ export const SettingsModal = () => {
               <Text fontSize="sm">
                 {m.settings_modal_see_the()}{" "}
                 <a
-                  href="https://garethgeorge.github.io/backrest/docs/multihost"
+                  href={docsUrl("docs/src/docs/multihost.md")}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ textDecoration: "underline" }}

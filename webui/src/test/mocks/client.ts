@@ -46,6 +46,11 @@ export const makeEventStream = <T = OperationEvent>() => {
   };
 };
 
+/** No Aegis status by default: suites that need one resolve it themselves. */
+export const authenticatedFetch = vi.fn(
+  async () => new Response(null, { status: 404 }),
+);
+
 export const backrestService = {
   getConfig: vi.fn(),
   setConfig: vi.fn(),

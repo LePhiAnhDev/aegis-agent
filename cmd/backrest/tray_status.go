@@ -76,7 +76,7 @@ func (t *trayStatus) refresh() {
 	if ic := statusIcon(state); ic != nil {
 		systray.SetIcon(ic)
 	}
-	systray.SetTooltip("Backrest — " + message)
+	systray.SetTooltip("Aegis Agent: " + message)
 	if mStatusText != nil {
 		mStatusText.SetTitle(message)
 		mStatusText.Show()

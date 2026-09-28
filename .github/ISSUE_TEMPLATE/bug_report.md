@@ -1,12 +1,12 @@
 ---
 name: Bug report
-about: Report an issue with Backrest
+about: Report an issue with Aegis Agent
 title: ""
 labels: bug
 assignees: ""
 ---
 
-Note: if you have a question or need support please post in the [discussions area](https://github.com/garethgeorge/backrest/discussions).
+Note: Aegis Agent is a modified version of Backrest. Report problems with Aegis Agent here, not to the Backrest project.
 
 **Describe the bug**
 A clear and concise description of what the bug is.
@@ -27,8 +27,9 @@ If applicable, add screenshots to help explain your problem.
 
 **Platform Info**
 
-- OS and Architecture [e.g. Windows 10 x64, Darwin arm64]
-- Backrest Version [e.g. 0.0.0]
+- OS and Architecture [e.g. Ubuntu 24.04 x86_64, Debian 12 arm64]
+- Installed with [Docker or Linux service]
+- Aegis Agent version (`aegis-agent --version`) [e.g. 1.0.0]
 
 **Additional context**
 Add any other context about the problem here.

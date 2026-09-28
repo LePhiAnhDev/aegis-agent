@@ -33,6 +33,7 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { Tooltip } from "../components/ui/tooltip";
+import { AegisConnection } from "../components/common/AegisConnection";
 import { keyframes } from "@emotion/react";
 
 import {
@@ -58,7 +59,8 @@ import { uiBuildVersion } from "../state/buildcfg";
 import { ActivityBar } from "../components/layout/ActivityBar";
 import { OperationStatus } from "../../gen/ts/v1/operations_pb";
 import { useResourceStatus } from "../api/resourceStatus";
-import LogoSvg from "../../assets/logo.svg";
+import LogoPng from "../../assets/logo.png";
+import { productName, releasesUrl, upstreamVersion } from "../state/aegis";
 import { keyBy } from "../lib/util";
 import { Code } from "@connectrpc/connect";
 import { LoginModal } from "../features/auth/LoginModal";
@@ -902,26 +904,49 @@ export const App: React.FC = () => {
         <Box display={{ base: "block", lg: "none" }} mr={2}>
           <MobileNavTrigger />
         </Box>
-        <Box as="a" cursor="pointer" onClick={() => navigate("/")} mr={4}>
-          <img src={LogoSvg} style={{ height: "30px", marginBottom: "-4px" }} />
-        </Box>
+        <Flex
+          as="a"
+          cursor="pointer"
+          onClick={() => navigate("/")}
+          mr={4}
+          align="center"
+          gap={2}
+        >
+          <img src={LogoPng} alt="" style={{ height: "30px" }} />
+          <Text
+            as="span"
+            fontWeight="semibold"
+            fontSize="lg"
+            whiteSpace="nowrap"
+          >
+            {productName}
+          </Text>
+        </Flex>
 
         <Flex align="baseline" gap={4}>
-          <Link
-            href="https://github.com/garethgeorge/backrest"
-            target="_blank"
-            color="whiteAlpha.700"
-            fontSize="xs"
-            display={{ base: "none", lg: "block" }}
+          <Tooltip
+            content={m.aegis_version_tooltip({
+              version: uiBuildVersion,
+              upstreamVersion,
+            })}
           >
-            {uiBuildVersion}
-          </Link>
+            <Link
+              href={releasesUrl}
+              target="_blank"
+              color="whiteAlpha.700"
+              fontSize="xs"
+              display={{ base: "none", lg: "block" }}
+            >
+              {uiBuildVersion}
+            </Link>
+          </Tooltip>
           <Box fontSize="xs">
             <ActivityBar />
           </Box>
         </Flex>
 
         <Flex ml="auto" align="center" gap={4}>
+          <AegisConnection />
           <Text
             fontSize="xs"
             color="whiteAlpha.600"

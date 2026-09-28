@@ -136,31 +136,35 @@ describe("HooksFormList", () => {
     expect(screen.getAllByText(/^Hook \d+:/)).toHaveLength(1);
   });
 
-  it("adding a Discord hook shows its webhook field and propagates edits", async () => {
+  it("offers only command hooks: Aegis Cloud sends the notifications", async () => {
     const onChange = vi.fn();
     const { user } = renderWithProviders(<HooksFormList onChange={onChange} />);
 
     await openAddHookMenu(user);
-    await user.click(await screen.findByRole("menuitem", { name: "Discord" }));
-
-    expect(onChange).toHaveBeenLastCalledWith([
-      {
-        conditions: [],
-        actionDiscord: { webhookUrl: "", template: "{{ .Summary }}" },
-      },
+    const items = await screen.findAllByRole("menuitem");
+    expect(items.map((item) => item.textContent)).toEqual([
+      m.repo_hooks_command_label(),
     ]);
+    expect(screen.queryByRole("menuitem", { name: "Discord" })).toBeNull();
+  });
 
-    const urlInput = screen.getByPlaceholderText("Discord Webhook URL");
-    await user.type(urlInput, "https://example.com/hook");
-
-    expect(onChange).toHaveBeenLastCalledWith([
-      {
-        conditions: [],
-        actionDiscord: {
-          webhookUrl: "https://example.com/hook",
-          template: "{{ .Summary }}",
-        },
-      },
-    ]);
+  it("still shows a notification hook that is already configured", () => {
+    renderWithProviders(
+      <HooksFormList
+        onChange={vi.fn()}
+        defaultValue={[
+          {
+            conditions: [],
+            actionDiscord: {
+              webhookUrl: "https://example.com/hook",
+              template: "{{ .Summary }}",
+            },
+          } as HookFields,
+        ]}
+      />,
+    );
+    expect(screen.getByPlaceholderText("Discord Webhook URL")).toHaveValue(
+      "https://example.com/hook",
+    );
   });
 });

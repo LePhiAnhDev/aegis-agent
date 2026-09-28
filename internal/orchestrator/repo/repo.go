@@ -35,7 +35,7 @@ type RepoOrchestrator struct {
 // NewRepoOrchestrator accepts a config and a repo that is configured with the properties of that config object.
 func NewRepoOrchestrator(config *v1.Config, repoConfig *v1.Repo, resticPath string) (*RepoOrchestrator, error) {
 	if config.Instance == "" {
-		return nil, errors.New("instance is a required field in the backrest config")
+		return nil, errors.New("instance is a required field in the Aegis Agent config")
 	}
 
 	var opts []restic.GenericOption
@@ -159,7 +159,7 @@ func (r *RepoOrchestrator) Backup(ctx context.Context, plan *v1.Plan, dryRun boo
 	if r.config.Instance != "" {
 		opts = append(opts, restic.WithFlags("--tag", TagForInstance(r.config.Instance)))
 	} else {
-		zap.L().Warn("Creating a backup without an 'instance' tag as no value is set in the config. In a future backrest release this will be an error.")
+		zap.L().Warn("Creating a backup without an 'instance' tag as no value is set in the config. In a future Aegis Agent release this will be an error.")
 	}
 
 	for _, exclude := range plan.Excludes {

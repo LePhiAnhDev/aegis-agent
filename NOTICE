@@ -1,0 +1,52 @@
+Aegis Agent
+Copyright (C) 2026 The Aegis Cloud authors
+
+Aegis Agent is a modified version of Backrest
+(https://github.com/garethgeorge/backrest), Copyright (C) Gareth George and the
+Backrest contributors, licensed under the GNU General Public License v3.0.
+Aegis Agent is distributed under the same license; see LICENSE.
+
+Based on: Backrest 1.14.1 (2026-07-12) with the later upstream changes up to
+commit 148ba12c (2026-07-28)
+Source code of Aegis Agent: https://github.com/LePhiAnhDev/aegis-agent
+
+Modifications made for Aegis Agent (starting 2026-09-28):
+
+- Product renamed to Aegis Agent in the web interface, all translations, icons,
+  tray, command line output, logs, default data and config directories, and
+  packaging. Configuration environment variables (BACKREST_*) and internal Go
+  package paths are unchanged.
+- Documentation links point to the Aegis Agent repository; a command hook guide
+  for Aegis Agent was added under docs/aegis.
+- Reporting to Aegis Cloud (internal/aegis, new): one-way reports to the report
+  URL set at install time. They hold finished operations (result, statistics,
+  error messages, files that could not be read, the end of the operation log),
+  running backups, the repositories and plans with their paths and schedules,
+  and a heartbeat. Repository passwords, storage keys, restic command lines and
+  snapshot contents are never sent. The connection state is served at
+  /aegis/status and shown in the web interface header.
+- Login is always required: the switch that turned authentication off was
+  removed, and the server refuses a configuration that disables it.
+- The web interface creates new repositories only on an Aegis Cloud storage,
+  picked from the storages the agent was installed with; the storage key is
+  read from the environment.
+- Notification hooks other than commands are no longer offered for new hooks
+  (alerts are sent by Aegis Cloud); existing hooks keep working.
+- Multihost sync is turned off in the web interface.
+- The restic binary shipped next to Aegis Agent is used before downloading one.
+- Fix: a repository with backups but no check or prune yet no longer stops the
+  agent from starting when the check or prune schedule is a cron expression
+  counted from the last run (internal/protoutil/schedule.go).
+- Packaging: releases are built by scripts/aegis-release.sh for Linux x86_64
+  and arm64, with restic in the archive. install.sh was replaced by an
+  installer for a root systemd service (/opt/aegis-agent, /etc/aegis-agent,
+  /var/lib/aegis-agent) that checks downloads against SHA256SUMS. The Docker
+  images are built from the binaries that script stages and carry the license
+  texts in /licenses. Upstream's CI workflows, dependabot, funding and
+  goreleaser configuration were removed; the issue templates name Aegis Agent.
+
+Restic (https://restic.net), which Aegis Agent runs to perform backups, is
+distributed under the BSD 2-Clause License. Its license text ships as
+LICENSE.restic in the release archives and in /licenses of the Docker image.
+The Docker image also contains Alpine Linux packages (tini, curl, bash, rclone,
+openssh, tzdata, docker-cli), each under its own license.

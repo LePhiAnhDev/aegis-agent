@@ -1,29 +1,26 @@
+# Minimal variant without a shell: command hooks cannot run in it. Aegis Agent
+# publishes the Alpine image (Dockerfile.alpine); this one is built from the
+# same context staged by scripts/aegis-release.sh.
+
 # Stage 1: Dependencies (Alpine)
 FROM alpine:latest AS alpine
 RUN apk add --no-cache ca-certificates tini-static
 RUN mkdir /tmp-orig
 
-ARG TARGETPLATFORM
-# Binaries are staged per-platform by goreleaser dockers_v2
-COPY $TARGETPLATFORM/backrest /backrest
-RUN /backrest --install-deps-only
-
-# Setup restic path
-RUN mkdir -p /bin && mv /root/.local/share/backrest/restic /bin/restic
-
 
 # Stage 2: Final Image (Scratch)
 FROM scratch
-LABEL org.opencontainers.image.source="https://github.com/garethgeorge/backrest"
+LABEL org.opencontainers.image.source="https://github.com/LePhiAnhDev/aegis-agent"
 
 COPY --from=alpine /tmp-orig /tmp
 COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=alpine /bin/restic /bin/restic
 COPY --from=alpine /sbin/tini-static /tini
 
 ARG TARGETPLATFORM
-COPY $TARGETPLATFORM/backrest /backrest
-COPY $TARGETPLATFORM/docker-entrypoint /docker-entrypoint
+COPY --chmod=0755 $TARGETPLATFORM/restic /bin/restic
+COPY --chmod=0755 $TARGETPLATFORM/aegis-agent /aegis-agent
+COPY --chmod=0755 $TARGETPLATFORM/docker-entrypoint /docker-entrypoint
+COPY --chmod=0644 licenses/LICENSE licenses/LICENSE.restic licenses/NOTICE /licenses/
 
 ENTRYPOINT ["/tini", "--", "/docker-entrypoint"]
-CMD ["/backrest"]
+CMD ["/aegis-agent"]

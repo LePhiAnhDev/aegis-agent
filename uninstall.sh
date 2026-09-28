@@ -1,2 +1,3 @@
-#!/bin/bash
-exec "$(dirname "$0")/install.sh" --uninstall "$@"
+#!/bin/sh
+# Removes Aegis Agent; add --purge to delete its settings and history as well.
+exec sh "$(dirname "$0")/install.sh" --uninstall "$@"

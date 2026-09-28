@@ -1,0 +1,241 @@
+{
+  "schema": 1,
+  "sentAt": "2026-09-21T14:16:40Z",
+  "agent": {
+    "installId": "3f2b8c1e-4a5d-4e6f-8a7b-9c0d1e2f3a4b",
+    "instanceId": "web-01",
+    "hostname": "web-prod-01",
+    "os": "Ubuntu 24.04.1 LTS",
+    "arch": "amd64",
+    "agentVersion": "1.0.0",
+    "resticVersion": "0.19.1",
+    "runtime": "docker"
+  },
+  "events": [
+    {
+      "key": "3f2b8c1e-4a5d-4e6f-8a7b-9c0d1e2f3a4b:42:started",
+      "opId": 42,
+      "flowId": 40,
+      "kind": "backup",
+      "phase": "started",
+      "planId": "daily",
+      "repo": {
+        "id": "asia",
+        "guid": "guid",
+        "bucket": "aegis-abc123-apac-xyz789",
+        "prefix": "servers/agt_aaaaaaaaaaaa"
+      },
+      "startedAt": "2026-09-21T14:13:20Z"
+    },
+    {
+      "key": "3f2b8c1e-4a5d-4e6f-8a7b-9c0d1e2f3a4b:42:finished",
+      "opId": 42,
+      "flowId": 40,
+      "kind": "backup",
+      "phase": "finished",
+      "status": "success",
+      "planId": "daily",
+      "repo": {
+        "id": "asia",
+        "guid": "guid",
+        "bucket": "aegis-abc123-apac-xyz789",
+        "prefix": "servers/agt_aaaaaaaaaaaa"
+      },
+      "startedAt": "2026-09-21T14:13:20Z",
+      "finishedAt": "2026-09-21T14:15:20Z",
+      "snapshotId": "1a2b3c4d",
+      "stats": {
+        "bytesProcessed": 10000,
+        "bytesAdded": 500,
+        "filesNew": 3,
+        "filesChanged": 1,
+        "filesUnmodified": 90,
+        "filesProcessed": 94,
+        "durationSeconds": 120.5
+      }
+    },
+    {
+      "key": "3f2b8c1e-4a5d-4e6f-8a7b-9c0d1e2f3a4b:43:finished",
+      "opId": 43,
+      "flowId": 40,
+      "kind": "backup",
+      "phase": "finished",
+      "status": "warning",
+      "planId": "daily",
+      "repo": {
+        "id": "asia",
+        "guid": "guid",
+        "bucket": "aegis-abc123-apac-xyz789",
+        "prefix": "servers/agt_aaaaaaaaaaaa"
+      },
+      "startedAt": "2026-09-21T14:13:20Z",
+      "finishedAt": "2026-09-21T14:15:20Z",
+      "snapshotId": "1a2b3c4d",
+      "stats": {
+        "bytesProcessed": 10000,
+        "bytesAdded": 500,
+        "filesNew": 3,
+        "filesChanged": 1,
+        "filesUnmodified": 90,
+        "filesProcessed": 94,
+        "durationSeconds": 120.5
+      },
+      "message": "Some files could not be read",
+      "detail": "restic output",
+      "fileErrors": [
+        {
+          "item": "/srv/app/locked.db",
+          "message": "open /srv/app/locked.db: permission denied"
+        }
+      ]
+    },
+    {
+      "key": "3f2b8c1e-4a5d-4e6f-8a7b-9c0d1e2f3a4b:44:finished",
+      "opId": 44,
+      "flowId": 40,
+      "kind": "backup",
+      "phase": "finished",
+      "status": "failed",
+      "planId": "daily",
+      "repo": {
+        "id": "asia",
+        "guid": "guid",
+        "bucket": "aegis-abc123-apac-xyz789",
+        "prefix": "servers/agt_aaaaaaaaaaaa"
+      },
+      "startedAt": "2026-09-21T14:13:20Z",
+      "finishedAt": "2026-09-21T14:15:20Z",
+      "message": "Fatal: unable to open config file: Stat: 403 Forbidden",
+      "detail": "restic output"
+    },
+    {
+      "key": "3f2b8c1e-4a5d-4e6f-8a7b-9c0d1e2f3a4b:45:finished",
+      "opId": 45,
+      "flowId": 45,
+      "kind": "prune",
+      "phase": "finished",
+      "status": "success",
+      "planId": "_system_",
+      "repo": {
+        "id": "asia",
+        "guid": "guid",
+        "bucket": "aegis-abc123-apac-xyz789",
+        "prefix": "servers/agt_aaaaaaaaaaaa"
+      },
+      "startedAt": "2026-09-21T14:13:20Z",
+      "finishedAt": "2026-09-21T14:13:50Z",
+      "bytesReclaimed": 3001025
+    },
+    {
+      "key": "3f2b8c1e-4a5d-4e6f-8a7b-9c0d1e2f3a4b:46:finished",
+      "opId": 46,
+      "flowId": 46,
+      "kind": "check",
+      "phase": "finished",
+      "status": "failed",
+      "planId": "_system_",
+      "repo": {
+        "id": "asia",
+        "guid": "guid",
+        "bucket": "aegis-abc123-apac-xyz789",
+        "prefix": "servers/agt_aaaaaaaaaaaa"
+      },
+      "startedAt": "2026-09-21T14:13:20Z",
+      "finishedAt": "2026-09-21T14:14:20Z",
+      "message": "check: repository contains errors",
+      "detail": "Fatal: repository contains errors"
+    },
+    {
+      "key": "3f2b8c1e-4a5d-4e6f-8a7b-9c0d1e2f3a4b:47:finished",
+      "opId": 47,
+      "flowId": 42,
+      "kind": "forget",
+      "phase": "finished",
+      "status": "success",
+      "planId": "daily",
+      "repo": {
+        "id": "asia",
+        "guid": "guid",
+        "bucket": "aegis-abc123-apac-xyz789",
+        "prefix": "servers/agt_aaaaaaaaaaaa"
+      },
+      "startedAt": "2026-09-21T14:15:30Z",
+      "finishedAt": "2026-09-21T14:15:31Z"
+    }
+  ],
+  "inventory": {
+    "repos": [
+      {
+        "id": "asia",
+        "guid": "guid",
+        "bucket": "aegis-abc123-apac-xyz789",
+        "prefix": "servers/agt_aaaaaaaaaaaa",
+        "stats": {
+          "totalSize": 123456789,
+          "snapshotCount": 12,
+          "at": "2026-09-21T14:15:00Z"
+        }
+      }
+    ],
+    "plans": [
+      {
+        "id": "daily",
+        "repoId": "asia",
+        "paths": [
+          "/userdata/srv"
+        ],
+        "schedule": {
+          "kind": "cron",
+          "expression": "0 2 * * *",
+          "clock": "local"
+        },
+        "snapshotCount": 12,
+        "lastSnapshotBytes": 10000
+      },
+      {
+        "id": "hourly",
+        "repoId": "asia",
+        "paths": [
+          "/userdata/db"
+        ],
+        "schedule": {
+          "kind": "hours",
+          "every": 6,
+          "clock": "utc"
+        }
+      },
+      {
+        "id": "weekly",
+        "repoId": "asia",
+        "paths": [
+          "/userdata/home"
+        ],
+        "schedule": {
+          "kind": "days",
+          "every": 7,
+          "clock": "last-run"
+        }
+      },
+      {
+        "id": "paused",
+        "repoId": "asia",
+        "paths": [
+          "/userdata/tmp"
+        ],
+        "schedule": {
+          "kind": "disabled"
+        }
+      },
+      {
+        "id": "zero-days",
+        "repoId": "asia",
+        "paths": [
+          "/userdata/odd"
+        ],
+        "schedule": {
+          "kind": "disabled"
+        }
+      }
+    ]
+  }
+}

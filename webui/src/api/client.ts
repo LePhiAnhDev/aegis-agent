@@ -12,7 +12,8 @@ export const setAuthToken = (token: string) => {
   localStorage.setItem(tokenKey, token);
 };
 
-const fetch = (
+/** fetch with the interface login's token; also used for the Aegis status endpoint. */
+export const authenticatedFetch = (
   input: RequestInfo | URL,
   init?: RequestInit,
 ): Promise<Response> => {
@@ -28,7 +29,7 @@ const fetch = (
 const transport = createConnectTransport({
   baseUrl: backendUrl,
   useBinaryFormat: true,
-  fetch: fetch as typeof globalThis.fetch,
+  fetch: authenticatedFetch as typeof globalThis.fetch,
 });
 
 export const authenticationService = createClient(Authentication, transport);

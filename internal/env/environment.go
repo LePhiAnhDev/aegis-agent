@@ -20,15 +20,15 @@ var (
 	EnvVarMultihostHeartbeatInterval = "BACKREST_MULTIHOST_HEARTBEAT_INTERVAL" // interval for multihost heartbeat messages
 )
 
-var flagDataDir = flag.String("data-dir", "", "path to data directory, defaults to XDG_DATA_HOME/.local/backrest. Overrides BACKREST_DATA environment variable.")
-var flagConfigPath = flag.String("config-file", "", "path to config file, defaults to XDG_CONFIG_HOME/backrest/config.json. Overrides BACKREST_CONFIG environment variable.")
+var flagDataDir = flag.String("data-dir", "", "path to data directory, defaults to XDG_DATA_HOME/aegis-agent (~/.local/share/aegis-agent). Overrides BACKREST_DATA environment variable.")
+var flagConfigPath = flag.String("config-file", "", "path to config file, defaults to XDG_CONFIG_HOME/aegis-agent/config.json. Overrides BACKREST_CONFIG environment variable.")
 var flagBindAddress = flag.String("bind-address", "", "address to bind to, defaults to 127.0.0.1:9898. Use :9898 to listen on all interfaces. Overrides BACKREST_PORT environment variable.")
-var flagResticBinPath = flag.String("restic-cmd", "", "path to restic binary, defaults to a backrest managed version of restic. Overrides BACKREST_RESTIC_COMMAND environment variable.")
+var flagResticBinPath = flag.String("restic-cmd", "", "path to restic binary, defaults to the restic shipped with or managed by Aegis Agent. Overrides BACKREST_RESTIC_COMMAND environment variable.")
 var flagMultihostHeartbeatInterval = flag.Duration("multihost-heartbeat-interval", 600*time.Second, "interval in seconds to send heartbeat messages to other hosts in a multihost setup. Defaults to 600 seconds, but can be set lower to keep connections alive with reverse proxies that aggressively timeout idle connections.")
 
 // ConfigFilePath
-// - *nix systems use $XDG_CONFIG_HOME/backrest/config.json
-// - windows uses %APPDATA%/backrest/config.json
+// - *nix systems use $XDG_CONFIG_HOME/aegis-agent/config.json
+// - windows uses %APPDATA%/aegis-agent/config.json
 func ConfigFilePath() string {
 	if *flagConfigPath != "" {
 		return *flagConfigPath
@@ -36,12 +36,12 @@ func ConfigFilePath() string {
 	if val := os.Getenv(EnvVarConfigPath); val != "" {
 		return val
 	}
-	return filepath.Join(getConfigDir(), "backrest", "config.json")
+	return filepath.Join(getConfigDir(), "aegis-agent", "config.json")
 }
 
 // DataDir
-// - *nix systems use $XDG_DATA_HOME/backrest
-// - windows uses %APPDATA%/backrest/data
+// - *nix systems use $XDG_DATA_HOME/aegis-agent
+// - windows uses %APPDATA%/aegis-agent/data
 func DataDir() string {
 	if *flagDataDir != "" {
 		return *flagDataDir
@@ -50,13 +50,13 @@ func DataDir() string {
 		return val
 	}
 	if val := os.Getenv("XDG_DATA_HOME"); val != "" {
-		return filepath.Join(val, "backrest")
+		return filepath.Join(val, "aegis-agent")
 	}
 
 	if runtime.GOOS == "windows" {
-		return filepath.Join(getConfigDir(), "backrest", "data")
+		return filepath.Join(getConfigDir(), "aegis-agent", "data")
 	}
-	return filepath.Join(getHomeDir(), ".local", "share", "backrest")
+	return filepath.Join(getHomeDir(), ".local", "share", "aegis-agent")
 }
 
 func BindAddress() string {

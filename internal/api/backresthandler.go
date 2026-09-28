@@ -19,6 +19,7 @@ import (
 	"github.com/garethgeorge/backrest/gen/go/types"
 	v1 "github.com/garethgeorge/backrest/gen/go/v1"
 	"github.com/garethgeorge/backrest/gen/go/v1/v1connect"
+	"github.com/garethgeorge/backrest/internal/aegis"
 	"github.com/garethgeorge/backrest/internal/api/sftputil"
 	syncapi "github.com/garethgeorge/backrest/internal/api/syncapi"
 	"github.com/garethgeorge/backrest/internal/config"
@@ -78,6 +79,9 @@ func (s *BackrestHandler) SetConfig(ctx context.Context, req *connect.Request[v1
 		rehydrated := config.RehydrateNetworkSanitizedConfig(req.Msg, cfg)
 		if err := config.ValidateConfig(rehydrated); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("validation error: %w", err))
+		}
+		if err := aegis.ValidateConfigUpdate(rehydrated); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 		rehydrated.Modno++
 		return rehydrated, nil

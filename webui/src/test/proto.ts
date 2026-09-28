@@ -15,7 +15,16 @@ export const makeConfig = (
 ): Config =>
   create(ConfigSchema, {
     instance: "test-instance",
-    auth: { disabled: true, users: [] },
+    // Aegis Agent always requires a login: a configured agent has a user.
+    auth: {
+      disabled: false,
+      users: [
+        {
+          name: "admin",
+          password: { case: "passwordBcrypt", value: "$2a$10$test" },
+        },
+      ],
+    },
     repos: [],
     plans: [],
     ...overrides,

@@ -14,4 +14,5 @@ export const features = new Set<string>(
 );
 
 // Feature flags
-export const isMultihostSyncEnabled = true;
+// Aegis Agent reports to Aegis Cloud instead of syncing with peers.
+export const isMultihostSyncEnabled = false;
